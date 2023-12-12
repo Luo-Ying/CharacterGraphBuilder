@@ -5,6 +5,7 @@ import pandas as pd
 import subprocess
 
 print(subprocess.getoutput("python -m spacy download fr_core_news_md"))
+
 # Chargement du modèle SpaCy pour le français
 nlp_fr = spacy.load('fr_core_news_md')
 
@@ -30,15 +31,34 @@ for book_folder in book_folders:
         G = nx.Graph()
         doc = nlp_fr(text)
 
-        characters = set()
+        # Alias (à voir comment le gérer manuellemenent)
+        alias_resolution = {
+            "John Traitor": "John",
+            "Sir Traitor": "John",
+            "Hari Seldon": "Hari",
+            "Mr Seldon": "Hari",
+            "Mme Seldon": "Hari"
+        }
+
         for ent in doc.ents:
             if ent.label_ == "PER":
-                characters.add(ent.text)
+                character = ent.text
+                # Alias === PER ?
+                if character in alias_resolution:
+                    character = alias_resolution[character]
+                G.add_node(character)
+                # Ajout de l'attribut 'names' avec le nom du personnage
+                G.nodes[character]['names'] = character
 
-        for character in characters:
-            G.add_node(character)
-            # Ajout de l'attribut 'names' avec le nom du personnage
-            G.nodes[character]['names'] = character
+        # Co-occurrences
+        for i, token in enumerate(doc):
+            if token.ent_type_ == "PER":
+                # 25
+                for j in range(i + 1, min(i + 25, len(doc))):
+                    if doc[j].ent_type_ == "PER":
+                        # Ajout d'une arête entre les personnages en co-occurrence
+                        if G.has_node(token.text) and G.has_node(doc[j].text):
+                            G.add_edge(token.text, doc[j].text)
 
         # Génération du graphml
         graphml = "".join(nx.generate_graphml(G))
