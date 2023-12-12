@@ -1,0 +1,8 @@
+corpus_asimov_leaderboard/
+corpus_asimov_TP/
+graphGenerated/
+
+mergeFile
+test_freeling_result.txt
+test_spacy_result.txt
+my_submission.csv
