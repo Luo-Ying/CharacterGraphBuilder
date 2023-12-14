@@ -1,28 +1,30 @@
+import os
 import re
 
-input_file = "D:\CoursAmphi\MASTER\S3\Innovation\CharacterGraphBuilder\corpus_asimov_leaderboard\les_cavernes_d_acier\chapter_1.txt.preprocessed"  # Remplacez par le chemin de votre fichier d'entrée
-output_file = "D:\CoursAmphi\MASTER\S3\Innovation\CharacterGraphBuilder\corpus_asimov_leaderboard\les_cavernes_d_acier\output.txt"  # Remplacez par le chemin de votre fichier de sortie
+corpus_path = "corpus_asimov_leaderboard"
+output_path = "corpus_reformed"
 
-# Ouvrir le fichier texte en mode lecture
-with open(input_file, "r", encoding="utf-8") as fichier_entree:
-    # Lire le contenu du fichier ligne par ligne et supprimer les sauts de ligne
-    lignes = [ligne.strip() for ligne in fichier_entree.readlines()]
+# Parcourir tous les répertoires du corpus
+for root, dirs, files in os.walk(corpus_path):
+    for file in files:
+        if file.endswith(".preprocessed"):
+            input_file = os.path.join(root, file)
+            relative_path = os.path.relpath(root, corpus_path)
+            output_folder = os.path.join(output_path, relative_path)
+            output_file = os.path.join(output_folder, file.replace(".preprocessed", ""))
 
-# Combinez toutes les lignes en une seule ligne avec des espaces entre les mots
-texte_combine = " ".join(lignes)
+            # Créer le répertoire de sortie s'il n'existe pas
+            os.makedirs(output_folder, exist_ok=True)
 
-# Divisez la chaîne en phrases en utilisant des caractères de ponctuation
-# phrases = re.split(r'(?<=[.!?])\s', texte_combine)
+            # Pour les fichiers dans le dossier : corpus_path
+            with open(input_file, "r", encoding="utf-8") as fichier_entree:
+                lignes = [ligne.strip() for ligne in fichier_entree.readlines()]
+                texte_combine = " ".join(lignes)
 
-# Réassemblez les phrases avec des sauts de ligne
-# nouveau_texte = '\n'.join(phrases)
+            # Pour les fichiers à créer dans le dossier : output_path
+            with open(output_file, "w", encoding="utf-8") as fichier_sortie:
+                fichier_sortie.write(texte_combine)
 
-# Ouvrir un nouveau fichier en mode écriture
-with open(output_file, "w", encoding="utf-8") as fichier_sortie:
-    # Écrire le texte combiné avec des sauts de ligne à chaque ponctuation dans le nouveau fichier
-    fichier_sortie.write(texte_combine)
-    # fichier_sortie.write(nouveau_texte)
+            print(f"Le fichier {output_file} a été créé avec succès.")
 
-print("Le fichier a été créé avec succès, avec des sauts de ligne à chaque ponctuation.")
-
-
+print("Tous les fichiers ont été traités.")
