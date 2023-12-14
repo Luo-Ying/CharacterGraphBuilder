@@ -30,7 +30,7 @@ def resolve_alias(characters):
 def extract_characters(doc):
     characters = set()
     for ent in doc.ents:
-        if ent.label_ == "PER":
+        if ent.label_ == "PER" and ent.root.pos_ == "PROPN":
             characters.add(ent.text)
     return characters
 
@@ -48,10 +48,10 @@ def detect_co_occurrences(doc, G):
     co_occurrences = {}
     # Co-occurrences
     for i, token in enumerate(doc):
-        if token.ent_type_ == "PER":
+        if token.ent_type_ == "PER" and token.pos_ == "PROPN":
             # 25 tokens de differences
             for j in range(i + 1, min(i + 25, len(doc))):
-                if doc[j].ent_type_ == "PER":
+                if doc[j].ent_type_ == "PER" and doc[j].pos_ == "PROPN":
                     co_occurrence = (token.text, doc[j].text)
                     if co_occurrence not in co_occurrences:
                         co_occurrences[co_occurrence] = 0
@@ -111,7 +111,8 @@ def process_corpus(corpus_folder, book_folders):
 
 
 # Chemin vers le dossier contenant les fichiers texte
-corpus_folder = "corpus_asimov_leaderboard"
+# corpus_folder = "corpus_asimov_leaderboard"
+corpus_folder = "corpus_reformed"
 
 # Liste des sous-dossiers pour chaque livre
 book_folders = ["les_cavernes_d_acier", "prelude_a_fondation"]
