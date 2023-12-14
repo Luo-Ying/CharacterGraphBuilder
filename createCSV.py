@@ -83,7 +83,7 @@ def process_chapter(chapter_path):
     return G
 
 
-def process_corpus(corpus_folder, book_folders):
+def process_corpus(corpus_folder = "corpus_reformed", book_folders = ["les_cavernes_d_acier", "prelude_a_fondation"]):
     df_dict = {"ID": [], "graphml": []}
 
     for book_folder in book_folders:
@@ -110,12 +110,12 @@ def process_corpus(corpus_folder, book_folders):
     df.to_csv("./my_submission.csv")
 
 
-# Chemin vers le dossier contenant les fichiers texte
-# corpus_folder = "corpus_asimov_leaderboard"
-corpus_folder = "corpus_reformed"
+# # Chemin vers le dossier contenant les fichiers texte
+# # corpus_folder = "corpus_asimov_leaderboard"
+# corpus_folder = "corpus_reformed"
 
-# Liste des sous-dossiers pour chaque livre
-book_folders = ["les_cavernes_d_acier", "prelude_a_fondation"]
+# # Liste des sous-dossiers pour chaque livre
+# book_folders = ["les_cavernes_d_acier", "prelude_a_fondation"]
 
-# Pour chaque fichier des sous-dossiers, convertie les données et les inclue dans un CSV
-process_corpus(corpus_folder, book_folders)
+# # Pour chaque fichier des sous-dossiers, convertie les données et les inclue dans un CSV
+# process_corpus(corpus_folder, book_folders)
