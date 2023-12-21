@@ -4,7 +4,7 @@ import networkx as nx
 import pandas as pd
 import subprocess
 
-print(subprocess.getoutput("python -m spacy download fr_core_news_md"))
+# print(subprocess.getoutput("python -m spacy download fr_core_news_md"))
 # Chargement du modèle SpaCy pour le français
 nlp = spacy.load("fr_core_news_md")
 
@@ -27,7 +27,7 @@ def resolve_alias(characters):
     return resolved_characters
 
 
-def extract_characters(doc):
+def extract_characters_md(doc):
     characters = set()
     for ent in doc.ents:
         if ent.label_ == "PER" and ent.root.pos_ == "PROPN":
@@ -72,8 +72,9 @@ def process_chapter(chapter_path):
     text = read_text_file(chapter_path)
     doc = nlp(text)
 
-    characters = extract_characters(doc)
+    characters = extract_characters_md(doc)
     resolved_characters = resolve_alias(characters)
+    # print(resolved_characters)
 
     # Création du graphe pour le chapitre
     G = create_graph(resolved_characters)

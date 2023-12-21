@@ -2,5 +2,8 @@ corpus_asimov_leaderboard/
 corpus_asimov_TP/
 graphGenerated/
 corpus_reformed/
+corpus_treated_by_Freeling/
+corpus_treated_by_Spacy/
+corpus_treated_merge_of_Freeling&Spacy/
 
 my_submission.csv
