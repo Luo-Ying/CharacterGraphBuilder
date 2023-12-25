@@ -9,7 +9,7 @@ for dir in $(ls corpus_reformed)
         for file in $(ls corpus_reformed/$dir)
             do
                 if mkdir -p "corpus_treated_by_Freeling/$dir"; then
-                    analyze -f en.cfg < corpus_reformed/$dir/$file > corpus_treated_by_Freeling/$dir/$file
+                    analyze -f fr.cfg < corpus_reformed/$dir/$file > corpus_treated_by_Freeling/$dir/$file
                 fi
                 
                 # mkdir corpus_treated_by_Freeling/$dir

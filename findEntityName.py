@@ -8,7 +8,7 @@ from pathlib import Path
 
 def useModelSpacy(nlp, file_to_read, file_spacy_result):
 
-    with open(file_to_read) as file:
+    with open(file_to_read, 'r', encoding='utf-8') as file:
         file_content = file.read()
 
     doc = nlp(file_content)
@@ -17,7 +17,7 @@ def useModelSpacy(nlp, file_to_read, file_spacy_result):
 
     results = [(word.text, word.label_) for word in doc.ents]
 
-    with open(file_spacy_result, 'w') as output_file:
+    with open(file_spacy_result, 'w', encoding='utf-8') as output_file:
         for item in results:
             item1 = item[0].replace('\n', ' ')
             item1 = item1.replace(' ', '_')
@@ -28,20 +28,20 @@ def useModelSpacy(nlp, file_to_read, file_spacy_result):
 
 def useFreeling(file_freeling_result):
 
-    with open(file_freeling_result, 'r') as file:
+    with open(file_freeling_result, 'r', encoding='utf-8') as file:
         lines = file.readlines()
 
     filtered_PER = [line for line in lines if len(line.split()) >= 3 and line.split()[2] == "NP00000"]
         
-    with open(file_freeling_result, 'w') as file:
+    with open(file_freeling_result, 'w', encoding='utf-8') as file:
         file.writelines(filtered_PER)
 
     
 def mergeResult(file_freeling_result, file_spacy_result, file_merge_results_of_2_models):
-    with open(file_freeling_result) as file:
+    with open(file_freeling_result, 'r', encoding='utf-8') as file:
         file_freeling_result_content = file.readlines()
 
-    with open(file_spacy_result) as file:
+    with open(file_spacy_result, 'r', encoding='utf-8') as file:
         file_spacy_result_content = file.readlines()
 
 
@@ -71,7 +71,7 @@ def mergeResult(file_freeling_result, file_spacy_result, file_merge_results_of_2
 
 
 
-    with open(file_merge_results_of_2_models, 'w') as file:
+    with open(file_merge_results_of_2_models, 'w', encoding='utf-8') as file:
         file.writelines(filtered_PER)
 
 
