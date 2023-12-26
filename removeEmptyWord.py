@@ -1,4 +1,4 @@
-import string
+import os
 
 code_of_special_character = [8212, 8217]
 
@@ -31,6 +31,8 @@ def remove_uselessWords(modif_file):
                     if len(words[2]) != "" and words[2][0] in tag_of_usefull_word:
                         file_write.write(line)
                 line = file_read.readline()
+                
+    os.remove(modif_file+"_whithout_punctuation.txt")
                 
 # Remove the usless words
 def lemmatisation(input_filename):
