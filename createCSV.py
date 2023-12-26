@@ -84,7 +84,7 @@ def process_chapter(chapter_path):
     return G
 
 
-def process_corpus(corpus_folder = "corpus_reformed", book_folders = ["les_cavernes_d_acier", "prelude_a_fondation"]):
+def process_corpus(corpus_folder = "corpus/corpus_reformed", book_folders = ["les_cavernes_d_acier", "prelude_a_fondation"]):
     df_dict = {"ID": [], "graphml": []}
 
     for book_folder in book_folders:

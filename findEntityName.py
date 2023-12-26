@@ -83,27 +83,30 @@ def checkAndCreateFoldert(folder_path):
 
 def findEntityName():
     
+    corpus_reformed ="corpus/corpus_reformed/"
+    
+    folder_spacy_result = "corpus/corpus_treated_by_Spacy/"
+    folder_freeling_result = "corpus/corpus_treated_by_Freeling/"
+    
+    folder_merge = "corpus/corpus_treated_merge_of_Freeling&Spacy/"
+    
+    
     print(subprocess.getoutput("python -m spacy download fr_core_news_md"))
     nlp = spacy.load("fr_core_news_md")
     # nlp_fr = fr_core_news_lg.load()
     
-    checkAndCreateFoldert("corpus_treated_by_Spacy")
+    checkAndCreateFoldert(folder_spacy_result)
     
-    path = Path("corpus_reformed")
+    path = Path(corpus_reformed)
     subdirectories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
     for dir in subdirectories:
-        if os.path.exists("corpus_treated_by_Spacy/" + dir)==False: os.makedirs("corpus_treated_by_Spacy/" + dir)
-        files = os.listdir("corpus_reformed/" + dir)
+        if os.path.exists(folder_spacy_result + dir)==False: os.makedirs(folder_spacy_result + dir)
+        files = os.listdir(corpus_reformed + dir)
         for file in files:
-            file_to_read = "corpus_reformed/" + dir + "/" + file
-            file_spacy_result = "corpus_treated_by_Spacy/" + dir + "/" + file
+            file_to_read = corpus_reformed + dir + "/" + file
+            file_spacy_result = folder_spacy_result + dir + "/" + file
             
             useModelSpacy(nlp, file_to_read, file_spacy_result)
-            
-    folder_freeling_result = "corpus_treated_by_Freeling/"
-    folder_spacy_result = "corpus_treated_by_Spacy/"
-    
-    folder_merge = "corpus_treated_merge_of_Freeling&Spacy/"
     
     for dir in subdirectories:
         if os.path.exists(folder_merge + dir) == False: os.makedirs(folder_merge + dir)
