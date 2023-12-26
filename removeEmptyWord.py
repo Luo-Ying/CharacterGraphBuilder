@@ -28,7 +28,7 @@ def remove_uselessWords(file_to_write):
             while line:
                 words = line.split()
                 if words: 
-                    if len(words[2]) != "" and words[2][0] in tag_of_usefull_word:
+                    if words[2] != "" and words[2][0] in tag_of_usefull_word:
                         file_write.write(line)
                 line = file_read.readline()
                 
