@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 # Charger le fichier CSV
-df = pd.read_csv("./my_submission.csv")
+df = pd.read_csv("my_submission.csv")
 
 # Créer le dossier s'il n'existe pas déjà
 output_folder = "./graphGenerated"

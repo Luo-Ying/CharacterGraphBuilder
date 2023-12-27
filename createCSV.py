@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import spacy
 import networkx as nx
@@ -14,19 +15,6 @@ def read_text_file(file_path):
         return file.read()
 
 
-# Alias (à voir comment le gérer manuellemenent)
-def resolve_alias(characters):
-    alias_resolution = {
-        "John Traitor": "John",
-        "Sir Traitor": "John",
-        "Hari Seldon": "Hari",
-        "Mr Seldon": "Hari",
-        "Mme Seldon": "Hari"
-    }
-    resolved_characters = [alias_resolution.get(char, char) for char in characters]
-    return resolved_characters
-
-
 def extract_characters(doc):
     characters = set()
     for ent in doc.ents:
@@ -35,12 +23,15 @@ def extract_characters(doc):
     return characters
 
 
-def create_graph(characters):
+def create_graph(characters, doc_ents):
     G = nx.Graph()
     for character in characters:
         G.add_node(character)
-        # Ajout de l'attribut 'names' avec le nom du personnage
-        G.nodes[character]['names'] = character
+        # Ajout des alias spécifiques pour chaque personnage dans ce chapitre
+        aliases = [ent.text for ent in doc_ents if ent.text != character and character in ent.text]
+        unique_aliases = set(aliases)  # Utiliser un ensemble pour supprimer les doublons
+        aliases_str = ';'.join([character] + list(unique_aliases)) if unique_aliases else character
+        G.nodes[character]['names'] = aliases_str
     return G
 
 
@@ -49,9 +40,9 @@ def detect_co_occurrences(doc, G):
     # Co-occurrences
     for i, token in enumerate(doc):
         if token.ent_type_ == "PER" and token.pos_ == "PROPN":
-            # 25 tokens de differences
+            # 25 tokens de différences
             for j in range(i + 1, min(i + 25, len(doc))):
-                if doc[j].ent_type_ == "PER" and doc[j].pos_ == "PROPN":
+                if doc[j].ent_type_ == "PER" and doc[j].pos_ == "PROPN" and token.text != doc[j].text:
                     co_occurrence = (token.text, doc[j].text)
                     if co_occurrence not in co_occurrences:
                         co_occurrences[co_occurrence] = 0
@@ -73,11 +64,10 @@ def process_chapter(chapter_path):
     doc = nlp(text)
 
     characters = extract_characters(doc)
-    resolved_characters = resolve_alias(characters)
 
     # Création du graphe pour le chapitre
-    G = create_graph(resolved_characters)
-    # Détection de co-occurences
+    G = create_graph(characters, doc.ents)
+    # Détection de co-occurrences
     G = detect_co_occurrences(doc, G)
 
     return G
@@ -86,32 +76,22 @@ def process_chapter(chapter_path):
 def process_corpus(corpus_folder, book_folders):
     df_dict = {"ID": [], "graphml": []}
 
-    for book_folder in book_folders:
-        book_path = os.path.join(corpus_folder, book_folder)
-        chapters = os.listdir(book_path)
-        chapter_number = 0
-        for chapter_file in chapters:
-            chapter_path = os.path.join(book_path, chapter_file)
-
-            G = process_chapter(chapter_path)
-
-            # Génération du graphml
-            graphml = "".join(nx.generate_graphml(G))
-            if book_folder == "prelude_a_fondation":
-                df_dict["ID"].append(f"paf{chapter_number}")
-            else:
-                df_dict["ID"].append(f"lca{chapter_number}")
-            df_dict["graphml"].append(graphml)
-            chapter_number += 1
-
-    # Génération du CSV
+    G = nx.Graph()
+    # Crée implicitement deux noeuds ("Hari" et "Dors"),
+    # et ajoute un lien entre eux.
+    G.add_edge("Hari", "Dors")
+    # On ajoute les attributs "names"
+    G.nodes["Hari"]["names"] = "Hari Seldon;Hari"
+    G.nodes["Dors"]["names"] = "Dors;docteur Dors"
+    df_dict["ID"].append("{}{}".format("lca", 0))
+    graphml = "".join(nx.generate_graphml(G))
+    df_dict["graphml"].append(graphml)
     df = pd.DataFrame(df_dict)
     df.set_index("ID", inplace=True)
-    df.to_csv("./my_submission.csv")
+    df.to_csv("./test.csv")
 
 
 # Chemin vers le dossier contenant les fichiers texte
-# corpus_folder = "corpus_asimov_leaderboard"
 corpus_folder = "corpus_reformed"
 
 # Liste des sous-dossiers pour chaque livre
