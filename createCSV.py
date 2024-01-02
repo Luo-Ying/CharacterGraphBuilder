@@ -1,121 +1,87 @@
 import os
-import spacy
 import networkx as nx
-import pandas as pd
-import subprocess
 
-print(subprocess.getoutput("python -m spacy download fr_core_news_md"))
-# Chargement du modèle SpaCy pour le français
-nlp = spacy.load("fr_core_news_md")
-
-
-def read_text_file(file_path):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        return file.read()
+# Fonction pour extraire les personnages d'un fichier donné
+def extract_characters(file_path):
+    characters = []
+    with open(file_path, 'r') as file:
+        for line in file:
+            characters.extend(line.strip().split())  # Sépare les tokens pour obtenir les entités
+    return set(characters)  # Utilisation d'un ensemble pour éviter les doublons
 
 
-# Alias (à voir comment le gérer manuellemenent)
-def resolve_alias(characters):
-    alias_resolution = {
-        "John Traitor": "John",
-        "Sir Traitor": "John",
-        "Hari Seldon": "Hari",
-        "Mr Seldon": "Hari",
-        "Mme Seldon": "Hari"
-    }
-    resolved_characters = [alias_resolution.get(char, char) for char in characters]
-    return resolved_characters
-
-
-def extract_characters(doc):
-    characters = set()
-    for ent in doc.ents:
-        if ent.label_ == "PER" and ent.root.pos_ == "PROPN":
-            characters.add(ent.text)
-    return characters
-
-
-def create_graph(characters):
+# Fonction pour construire le graphe pour un chapitre donné
+def build_graph(characters, tokens):
     G = nx.Graph()
+    characters_mapping = {}  # Pour stocker les alias de chaque personnage
+
     for character in characters:
-        G.add_node(character)
-        # Ajout de l'attribut 'names' avec le nom du personnage
-        G.nodes[character]['names'] = character
-    return G
+        characters_mapping[character] = [character.lower()]  # Initialise avec le nom du personnage
 
+    for i, token in enumerate(tokens[:-1]):  # Correction ici pour éviter l'index out of range
+        for character in characters:
+            if character.lower() in token.lower():
+                for other_character in characters:
+                    if other_character != character and other_character.lower() in tokens[i + 1].lower():
+                        # Co-occurrence détectée, met à jour les alias
+                        characters_mapping[character].extend(characters_mapping[other_character])
+                        characters_mapping[character] = list(set(characters_mapping[character]))  # Supprime les doublons
 
-def detect_co_occurrences(doc, G):
-    co_occurrences = {}
-    # Co-occurrences
-    for i, token in enumerate(doc):
-        if token.ent_type_ == "PER" and token.pos_ == "PROPN":
-            # 25 tokens de differences
-            for j in range(i + 1, min(i + 25, len(doc))):
-                if doc[j].ent_type_ == "PER" and doc[j].pos_ == "PROPN":
-                    co_occurrence = (token.text, doc[j].text)
-                    if co_occurrence not in co_occurrences:
-                        co_occurrences[co_occurrence] = 0
-                    co_occurrences[co_occurrence] += 1
+    for character, aliases in characters_mapping.items():
+        aliases_str = ";".join(aliases)
+        G.add_node(character, names=aliases_str)  # Ajoute le nœud avec la liste d'alias
 
-    for co_occurrence, freq in co_occurrences.items():
-        character1, character2 = co_occurrence
-        weight = freq
-        # Poids de l'arête basé sur la fréquence de la co-occurrence
-        if G.has_node(character1) and G.has_node(character2):
-            # Ajout d'une arête entre les personnages en co-occurrence
-            G.add_edge(character1, character2, weight=weight)
+    # Analyse des co-occurrences des entités dans les 25 tokens suivants
+    for i, token in enumerate(tokens[:-1]):  # Correction ici pour éviter l'index out of range
+        for character in characters:
+            if character.lower() in token.lower():
+                for j in range(i + 1, min(i + 26, len(tokens))):
+                    for other_character in characters:
+                        if other_character != character and other_character.lower() in tokens[j].lower():
+                            if G.has_edge(character, other_character):
+                                G[character][other_character]['weight'] += 1
+                            else:
+                                G.add_edge(character, other_character, weight=1)
 
-    return G
-
-
-def process_chapter(chapter_path):
-    text = read_text_file(chapter_path)
-    doc = nlp(text)
-
-    characters = extract_characters(doc)
-    resolved_characters = resolve_alias(characters)
-
-    # Création du graphe pour le chapitre
-    G = create_graph(resolved_characters)
-    # Détection de co-occurences
-    G = detect_co_occurrences(doc, G)
+    # Suppression des liens entre un personnage et lui-même
+    for character in characters:
+        if G.has_edge(character, character):
+            G.remove_edge(character, character)
 
     return G
 
 
-def process_corpus(corpus_folder = "corpus_reformed", book_folders = ["les_cavernes_d_acier", "prelude_a_fondation"]):
-    df_dict = {"ID": [], "graphml": []}
+# Dossiers contenant les fichiers
+freeling_spacy_folder = 'corpus_treated_merge_of_Freeling&Spacy'
+tokens_folder = 'corpus_tokens'
 
-    for book_folder in book_folders:
-        book_path = os.path.join(corpus_folder, book_folder)
-        chapters = os.listdir(book_path)
-        chapter_number = 0
-        for chapter_file in chapters:
-            chapter_path = os.path.join(book_path, chapter_file)
+books = [
+    (list(range(0, 18)), "lca", "les_cavernes_d_acier"),
+    (list(range(0, 19)), "paf", "prelude_a_fondation"),
+]
+df_dict = {"ID": [], "graphml": []}
 
-            G = process_chapter(chapter_path)
+for chapters, book_code, book_folder in books:
+    for chapter in chapters:
+        # Lecture des personnages du corpus Freeling&Spacy
+        characters_file_path = os.path.join(freeling_spacy_folder, f'{book_folder}/chapter_{chapter+1}.txt')
+        characters = extract_characters(characters_file_path)
 
-            # Génération du graphml
-            graphml = "".join(nx.generate_graphml(G))
-            if book_folder == "prelude_a_fondation":
-                df_dict["ID"].append(f"paf{chapter_number}")
-            else:
-                df_dict["ID"].append(f"lca{chapter_number}")
-            df_dict["graphml"].append(graphml)
-            chapter_number += 1
+        # Lecture des tokens du corpus tokens
+        tokens_file_path = os.path.join(tokens_folder, f'{book_folder}/chapter_{chapter+1}.txt')
+        with open(tokens_file_path, 'r') as file:
+            tokens = file.read().split()
 
-    # Génération du CSV
-    df = pd.DataFrame(df_dict)
-    df.set_index("ID", inplace=True)
-    df.to_csv("./my_submission.csv")
+        # Construction du graphe
+        graph = build_graph(characters, tokens)
 
+        # Enregistrement du graphe au format GraphML
+        graphml = "".join(nx.generate_graphml(graph))
+        df_dict["ID"].append(f"{book_code}{chapter}")
+        df_dict["graphml"].append(graphml)
 
-# # Chemin vers le dossier contenant les fichiers texte
-# # corpus_folder = "corpus_asimov_leaderboard"
-# corpus_folder = "corpus_reformed"
-
-# # Liste des sous-dossiers pour chaque livre
-# book_folders = ["les_cavernes_d_acier", "prelude_a_fondation"]
-
-# # Pour chaque fichier des sous-dossiers, convertie les données et les inclue dans un CSV
-# process_corpus(corpus_folder, book_folders)
+# Conversion en DataFrame et sauvegarde en CSV
+import pandas as pd
+df = pd.DataFrame(df_dict)
+df.set_index("ID", inplace=True)
+df.to_csv("./my_submission.csv")

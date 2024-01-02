@@ -1,7 +1,7 @@
 import os
 import re
 
-def reformFile(corpus_path = "corpus_asimov_leaderboard", output_path = "corpus_reformed"):
+def reformFile(corpus_path = "corpus/corpus_asimov_leaderboard", output_path = "corpus/corpus_reformed"):
 
     # Parcourir tous les répertoires du corpus
     for root, dirs, files in os.walk(corpus_path):
