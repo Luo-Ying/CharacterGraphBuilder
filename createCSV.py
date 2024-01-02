@@ -68,7 +68,7 @@ for chapters, book_code, book_folder in books:
         characters = extract_characters(characters_file_path)
 
         # Lecture des tokens du corpus tokens
-        tokens_file_path = os.path.join(tokens_folder, f'{book_folder}/chapter_{chapter+1}.txt_whithout_punctuation.txt')
+        tokens_file_path = os.path.join(tokens_folder, f'{book_folder}/chapter_{chapter+1}.txt')
         with open(tokens_file_path, 'r') as file:
             tokens = file.read().split()
 

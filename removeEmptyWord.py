@@ -26,10 +26,11 @@ def remove_uselessWords(file_to_write):
         with open(file_to_write, 'w', encoding='utf-8') as file_write:
             line = file_read.readline()
             while line:
-                words = line.split()
-                if words: 
-                    if words[2] != "" and words[2][0] in tag_of_usefull_word:
-                        file_write.write(line)
+                # words = line.split()
+                # if words: 
+                #     if words[2] != "" and words[2][0] in tag_of_usefull_word:
+                #         file_write.write(line)
+                file_write.write(line)
                 line = file_read.readline()
                 
     os.remove(file_to_write+"_whithout_punctuation.txt")
@@ -62,4 +63,3 @@ def lemmatisationInCorpus():
             file_to_write = folder_lemmatisation_result + dir + "/" + file
             lemmatisation(file_to_read, file_to_write)
             
-lemmatisationInCorpus()
