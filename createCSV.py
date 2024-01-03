@@ -4,9 +4,10 @@ import networkx as nx
 # Fonction pour extraire les personnages d'un fichier donné
 def extract_characters(file_path):
     characters = []
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding='utf-8') as file:
         for line in file:
-            characters.extend(line.strip().split())  # Sépare les tokens pour obtenir les entités
+            if len(line.strip().split()[0]) > 1:
+                characters.append(line.strip().split()[0].replace('_',' '))
     return set(characters)  # Utilisation d'un ensemble pour éviter les doublons
 
 
@@ -22,13 +23,16 @@ def build_graph(characters, tokens):
         for character in characters:
             if character.lower() in token.lower():
                 for other_character in characters:
-                    if other_character != character and other_character.lower() in tokens[i + 1].lower():
+                    if character.lower() in other_character.lower() or other_character.lower() in character.lower(): # Pour les alias
                         # Co-occurrence détectée, met à jour les alias
                         characters_mapping[character].extend(characters_mapping[other_character])
                         characters_mapping[character] = list(set(characters_mapping[character]))  # Supprime les doublons
 
+    # print(characters_mapping[character])
+
     for character, aliases in characters_mapping.items():
         aliases_str = ";".join(aliases)
+        # print(aliases_str)
         G.add_node(character, names=aliases_str)  # Ajoute le nœud avec la liste d'alias
 
     # Analyse des co-occurrences des entités dans les 25 tokens suivants
@@ -66,10 +70,11 @@ for chapters, book_code, book_folder in books:
         # Lecture des personnages du corpus Freeling&Spacy
         characters_file_path = os.path.join(freeling_spacy_folder, f'{book_folder}/chapter_{chapter+1}.txt')
         characters = extract_characters(characters_file_path)
+        # print(characters)
 
         # Lecture des tokens du corpus tokens
         tokens_file_path = os.path.join(tokens_folder, f'{book_folder}/chapter_{chapter+1}.txt_whithout_punctuation.txt')
-        with open(tokens_file_path, 'r') as file:
+        with open(tokens_file_path, 'r', encoding='utf-8') as file:
             tokens = file.read().split()
 
         # Construction du graphe
