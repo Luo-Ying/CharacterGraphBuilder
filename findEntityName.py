@@ -119,6 +119,4 @@ def findEntityName():
                     file_spacy_result_path = folder_spacy_result + dir + "/" + file_spacy
                     file_to_save_result_merge = folder_merge + dir + "/" + file_freeling
                     mergeResult(file_freeling_result_path, file_spacy_result_path, file_to_save_result_merge)
-    
-    
-findEntityName()
+                    

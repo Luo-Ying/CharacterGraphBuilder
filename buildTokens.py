@@ -14,8 +14,8 @@ def buildTokens(file_to_read, file_to_write):
                 break
             for line in chunk:
                 words = line.split()
-                if words and words[1] != '':
-                    content += words[1] + ' '
+                if words and words[0] != '':
+                    content += words[0] + ' '
             content += '\n'
             file_write.write(content)
 
@@ -39,5 +39,3 @@ def buildTokensInFiles():
             file_to_read = folder_lemmatisation + dir + "/" + file
             file_to_write = folder_tokens + dir + "/" + file
             buildTokens(file_to_read, file_to_write)
-            
-buildTokensInFiles()
