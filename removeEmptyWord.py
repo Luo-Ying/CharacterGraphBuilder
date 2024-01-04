@@ -15,7 +15,8 @@ def remove_punctuations(file_to_read, file_to_write):
             while line:
                 words = line.split()
                 if words: 
-                    if len(words[0]) > 1 and not ( ord(words[0][0]) < 65 or (ord(words[0][0]) > 90 and ord(words[0][0]) < 97) or (ord(words[0][0]) > 122 and ord(words[0][0]) < 192) or ord(words[0][0]) in code_of_special_character ):
+                    # if len(words[0]) > 1 and not ( ord(words[0][0]) < 65 or (ord(words[0][0]) > 90 and ord(words[0][0]) < 97) or (ord(words[0][0]) > 122 and ord(words[0][0]) < 192) or ord(words[0][0]) in code_of_special_character ):
+                    if len(words[0]) > 1 and words[0][0].isalpha():
                         file_write.write(line)
                 line = file_read.readline()
                 
