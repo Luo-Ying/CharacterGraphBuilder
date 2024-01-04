@@ -1,4 +1,4 @@
-from createCSV import createCSV
+from buildTokens import buildTokensInFiles
 from createCSV import createCSV
 from createGraphFromCSV import createGraphFromCSV
 from findEntityName import findEntityName
