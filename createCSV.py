@@ -3,7 +3,7 @@ import os
 import networkx as nx
 
 # Fonction pour extraire les personnages d'un fichier donné
-def extract_characters(file_path):
+def extract_characters(file_path, stopwords):
     characters = []
     with open(file_path, 'r', encoding='utf-8') as file:
         for line in file:
@@ -83,8 +83,8 @@ def createCSV():
             stopwords.append(line.replace('\n', ''))
 
     # Dossiers contenant les fichiers
-    freeling_spacy_folder = 'corpus_treated_merge_of_Freeling&Spacy'
-    tokens_folder = 'corpus_tokens'
+    freeling_spacy_folder = 'corpus/corpus_treated_merge_of_Freeling&Spacy'
+    tokens_folder = 'corpus/corpus_tokens'
 
     books = [
         (list(range(0, 18)), "lca", "les_cavernes_d_acier"),
@@ -96,11 +96,11 @@ def createCSV():
         for chapter in chapters:
             # Lecture des personnages du corpus Freeling&Spacy
             characters_file_path = os.path.join(freeling_spacy_folder, f'{book_folder}/chapter_{chapter+1}.txt')
-            characters = extract_characters(characters_file_path)
+            characters = extract_characters(characters_file_path, stopwords)
             # print(characters)
 
             # Lecture des tokens du corpus tokens
-            tokens_file_path = os.path.join(tokens_folder, f'{book_folder}/chapter_{chapter+1}.txt_whithout_punctuation.txt')
+            tokens_file_path = os.path.join(tokens_folder, f'{book_folder}/chapter_{chapter+1}.txt')
             with open(tokens_file_path, 'r', encoding='utf-8') as file:
                 tokens = file.read().split()
 
