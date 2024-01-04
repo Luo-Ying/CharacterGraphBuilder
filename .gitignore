@@ -8,5 +8,8 @@ corpus_reformed/
 corpus_treated_by_Freeling/
 corpus_treated_by_Spacy/
 corpus_treated_merge_of_Freeling&Spacy/
+corpus_tokens/
+corpus_treated_lemmatisationFreeling/
 
 my_submission.csv
+stopWords
