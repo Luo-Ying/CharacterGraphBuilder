@@ -143,13 +143,16 @@ def getNumberOfEntityNameInEachContext(file_to_read_context, file_to_read_Entity
     
     nbEntityNameInEachContext = []
     
+    with open('stopWords', 'r', encoding='utf-8') as file:
+        stopWords = [line.strip() for line in file]
+    
     # Get entity name list
     with open(file_to_read_EntityName, 'r', encoding='utf-8') as file_read:
         line = file_read.readline()
         while line:
             words = line.split()
             if words:
-                if words[0] != "": # and words[0] not in stopwords
+                if words[0] != "" and words[0] not in stopWords: # and words[0] not in stopwords
                     entityName_list.append(words[0])
             line = file_read.readline()
     
