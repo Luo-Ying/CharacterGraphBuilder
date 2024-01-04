@@ -2,12 +2,6 @@
 import os
 import networkx as nx
 
-# Mots à exclure
-stopwords = []
-with open("stopWords", 'r', encoding='utf-8') as file:
-    for line in file:
-        stopwords.append(line.replace('\n', ''))
-
 # Fonction pour extraire les personnages d'un fichier donné
 def extract_characters(file_path):
     characters = []
@@ -81,39 +75,45 @@ def build_graph(characters, tokens):
 
     return G
 
+def createCSV():
+    # Mots à exclure
+    stopwords = []
+    with open("stopWords", 'r', encoding='utf-8') as file:
+        for line in file:
+            stopwords.append(line.replace('\n', ''))
 
-# Dossiers contenant les fichiers
-freeling_spacy_folder = 'corpus_treated_merge_of_Freeling&Spacy'
-tokens_folder = 'corpus_tokens'
+    # Dossiers contenant les fichiers
+    freeling_spacy_folder = 'corpus_treated_merge_of_Freeling&Spacy'
+    tokens_folder = 'corpus_tokens'
 
-books = [
-    (list(range(0, 18)), "lca", "les_cavernes_d_acier"),
-    (list(range(0, 19)), "paf", "prelude_a_fondation"),
-]
-df_dict = {"ID": [], "graphml": []}
+    books = [
+        (list(range(0, 18)), "lca", "les_cavernes_d_acier"),
+        (list(range(0, 19)), "paf", "prelude_a_fondation"),
+    ]
+    df_dict = {"ID": [], "graphml": []}
 
-for chapters, book_code, book_folder in books:
-    for chapter in chapters:
-        # Lecture des personnages du corpus Freeling&Spacy
-        characters_file_path = os.path.join(freeling_spacy_folder, f'{book_folder}/chapter_{chapter+1}.txt')
-        characters = extract_characters(characters_file_path)
-        # print(characters)
+    for chapters, book_code, book_folder in books:
+        for chapter in chapters:
+            # Lecture des personnages du corpus Freeling&Spacy
+            characters_file_path = os.path.join(freeling_spacy_folder, f'{book_folder}/chapter_{chapter+1}.txt')
+            characters = extract_characters(characters_file_path)
+            # print(characters)
 
-        # Lecture des tokens du corpus tokens
-        tokens_file_path = os.path.join(tokens_folder, f'{book_folder}/chapter_{chapter+1}.txt_whithout_punctuation.txt')
-        with open(tokens_file_path, 'r', encoding='utf-8') as file:
-            tokens = file.read().split()
+            # Lecture des tokens du corpus tokens
+            tokens_file_path = os.path.join(tokens_folder, f'{book_folder}/chapter_{chapter+1}.txt_whithout_punctuation.txt')
+            with open(tokens_file_path, 'r', encoding='utf-8') as file:
+                tokens = file.read().split()
 
-        # Construction du graphe
-        graph = build_graph(characters, tokens)
+            # Construction du graphe
+            graph = build_graph(characters, tokens)
 
-        # Enregistrement du graphe au format GraphML
-        graphml = "".join(nx.generate_graphml(graph))
-        df_dict["ID"].append(f"{book_code}{chapter}")
-        df_dict["graphml"].append(graphml)
+            # Enregistrement du graphe au format GraphML
+            graphml = "".join(nx.generate_graphml(graph))
+            df_dict["ID"].append(f"{book_code}{chapter}")
+            df_dict["graphml"].append(graphml)
 
-# Conversion en DataFrame et sauvegarde en CSV
-import pandas as pd
-df = pd.DataFrame(df_dict)
-df.set_index("ID", inplace=True)
-df.to_csv("./my_submission.csv")
+    # Conversion en DataFrame et sauvegarde en CSV
+    import pandas as pd
+    df = pd.DataFrame(df_dict)
+    df.set_index("ID", inplace=True)
+    df.to_csv("./my_submission.csv")

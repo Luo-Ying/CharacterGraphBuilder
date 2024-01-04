@@ -1,5 +1,5 @@
 from reformFile import reformFile
-# from createCSV import process_corpus
+from createCSV import createCSV
 from createGraphFromCSV import createGraphFromCSV
 from findEntityName import findEntityName
 from removeEmptyWord import lemmatisationInCorpus
@@ -13,6 +13,8 @@ def main():
     findEntityName()
     lemmatisationInCorpus()
     buildTokensInFiles()
+    createCSV()
+    createGraphFromCSV()
 
     
 
