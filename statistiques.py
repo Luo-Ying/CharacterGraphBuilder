@@ -2,25 +2,6 @@ import os
 from pathlib import Path
 import string
 
-# Nombre de mots par phrases, par chapitres, paragraphes
-# Nombre de lettres par mots en moyenne
-# Pourcentages de stopwords par chapitre
-# Pourcentage de capitalized, uppercase, lowercase.
-# Combien d'entités de NER détecter en moyenne par chapitre et dans le contexte de 25 mots. 最好获取均值, 中间值 和 标准差 ( 标准差： 反映一个数据集的离散程度 （或理解为数据集的波动大小）)
-# Quelle est le pourcentage de Proper Noun dans les phrases.  均值， 中间值， 标准差
-
-
-
-nbWordsOfChapter = 0
-# nbWordsPerSentence = []
-# nbCharactersOfParagraph = []
-# nbUppercase = 0
-# nbLowercase = 0
-# nbCapitalized = 0
-# nbStopWordsOfChpter = 0
-# allEntityNameInAllContext = 0      # context = 25 mots
-nbContext = 0
-
 def checkAndCreateFoldert(folder_path):
 
     if not os.path.exists(folder_path):
@@ -275,13 +256,13 @@ def statistiques():
                 median_nbEntityNameInEachContext = getMedianValueInList(nbEntityNameInEachContext)
                 average_nbEntityNameInEachContext = getAverageValueInList(nbEntityNameInEachContext)
                 
-                file_write.write("Nombre de mots par phrase\n" + str(nbWordsPerSentence) + "\n")
+                file_write.write("mots_par_phrase:" + str(nbWordsPerSentence) + "\n")
                 file_write.write("Min:" + str(min_nbWordsPerSentence) + "\n")
                 file_write.write("Max:" + str(max_nbWordsPerSentence) + "\n")
                 file_write.write("Median:" + str(median_nbWordsPerSentence) + "\n")
                 file_write.write("Average:" + str(average_nbWordsPerSentence) + "\n\n")
                 
-                file_write.write("Nombre de mots par paragraph\n" + str(nbWordsPerParagraph) + "\n")
+                file_write.write("mots_par_paragraph:" + str(nbWordsPerParagraph) + "\n")
                 file_write.write("Min:" + str(min_nbWordsPerParagraph) + "\n")
                 file_write.write("Max:" + str(max_nbWordsPerParagraph) + "\n")
                 file_write.write("Median:" + str(median_nbWordsPerParagraph) + "\n")
@@ -298,7 +279,7 @@ def statistiques():
                 
                 file_write.write("Nombre de stopwords\n" + str(nbStopWordsOfChpter) + "\n\n")
                 
-                file_write.write("Nombre d'EntityName dans chaque context\n" + str(nbEntityNameInEachContext) + "\n")
+                file_write.write("entityname_par_context:" + str(nbEntityNameInEachContext) + "\n")
                 file_write.write("Min:" + str(min_nbEntityNameInEachContext) + "\n")
                 file_write.write("Max:" + str(max_nbEntityNameInEachContext) + "\n")
                 file_write.write("Median:" + str(median_nbEntityNameInEachContext) + "\n")
@@ -306,14 +287,5 @@ def statistiques():
                 
                 file_write.write("Nombre de context totale dans le chapitre\n" + str(len(nbEntityNameInEachContext)) + "\n\n")
 
-                # print("Nombre de mots par phrase" + str(nbWordsPerSentence))
-                # print("Nombre de mots par paragraph" + str(nbWordsPerParagraph))
-                # print("Nombre de mots par chapitre: " + str(nbWordsOfChapter))
-                # print("nombre uppercase: " + str(nbUppercase))
-                # print("nombre lowercase: " + str(nbLowercase))
-                # print("nombre capitalized: " + str(nbCapitalized))
-                # print("nombre stopwords: " + str(nbStopWordsOfChpter))
-                # print("nombre entity name dans chaque context: " + str(nbEntityNameInEachContext))
-                # print("nombre de context: " + str(len(nbEntityNameInEachContext)))
 
 statistiques()
