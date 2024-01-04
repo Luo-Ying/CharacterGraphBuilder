@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import networkx as nx
 
@@ -6,8 +7,30 @@ def extract_characters(file_path):
     characters = []
     with open(file_path, 'r', encoding='utf-8') as file:
         for line in file:
-            if len(line.strip().split()[0]) > 1:
-                characters.append(line.strip().split()[0].replace('_',' '))
+            if len(line.strip().split()[0]) > 1 and line.strip().split()[0] not in \
+                    ["Spaciens", "Spacetown", "Spacien", "Space", "Terrien", "Merci", "Excusez-moi", "Si_la_Maison-Blanche",
+                     "Mondes_Extérieurs", "Mondes_Ext&#233;rieurs", "punch", "Bible", "La Bible", "Voudriez", "Voyons",
+                     "Robotique", "supposez", "Veuillez", "Cit&#233;s", "Cités", "Croyez", "Remontant",
+                     "Ecoutez", "Trinit&#233;", "Trinité", "Ah", "circul&#226;t", "circulât",
+                     "Premi&#232;re Loi", "Première_Loi", "Pr&#233;tendez", "Prétendez",
+                     "Tenez", "Ouvrez", "Dites", "Continuez", "Allons", "R&#233;ponds", "Réponds", "Bon", "&#231;a",
+                     "ça", "Ciel", "causerez", "Oh", "Tiens", "Parviendrait", "M&#233;di&#233;valiste", "Médiévaliste",
+                     "Auriez", "&#233;tiez", "étiez", "Pardonnez", "Vraiment", "Disons", "Exact", "Terminus", "Encyclopaedia Galactica",
+                     "Trantor", "Trantorien", "&#199;a", "Ça", "&#200;re_Galactique", "Ère_Galactique", "Machinalement", "H&#233;liconien", "H&#233;licon",
+                     "Héliconien", "Hélicon", "Anacr&#233;on", "Anacréon", "contemplant", "Pr&#233;tendez", "Prétendez", "&#201;c&#339;urant",
+                     "Écœurant", "Suaverose", "Impressionnant", "Hein", "Fuite", "UNIVERSIT&#201;_DE_STREELING", "UNIVERSITÉ_DE_STREELING",
+                     "Difficile", "Souvenez", "D&#233;sol&#233;", "Désolé", "Cinna", "R&#233;fl&#233;chissez", "Réfléchissez",
+                     "Couverture", "Taciturne", "D&#233;tendez", "Détendez", "Donnez", "Ziggoreth", "Hestelonia", "Kan", "Vaguement",
+                     "Redites", "Mycog&#232;ne", "MYCOGÈNE", "MYCOG&#200;NE", "Mycogène", "Mycog&#232;niens", "Mycogèniens", "Mycog&#232;nien", "Mycogènien",
+                     "Damiano_Nord", "Lugubre", "gnome", "&#201;galitaire", "Égalitaire", "Secteur_de_Mycog&#232;ne", "Secteur_de_Mycogène",
+                     "ENCYCLOPAEDIA GALACTICA", "Attendez", "Surnaturaliste", "Livre", "Relaxez", "&#201;coutez", "Écoutez", "T&#226;ter",
+                     "Tâter", "guidiez", "Sacratorium", "Novigor", "Aurora", "Lissauer", "Respirez", "supposez", "Wendome",
+                     "terraform&#233;", "terraformé", "Question", "Math&#233;maticien", "Mathématicien", "C-3", "Dahl", "Descendants",
+                     "Puisatiers", "Si", "Mal", "ALL&#201;E_CENTRALE", "ALLÉE_CENTRALE", "Soupir", "Imp&#233;riaux", "Impériaux",
+                     "feinta", "Parole", "Dahlite", "Trantorien", "Exos", "Neutralisez", "Kanite", "Tournez", "Restons-en",
+                     "Idiot", "Adieu", "Facile", "hein", "Ouais", "Z&#233;ro", "Zéro", "Sacratorium_de_Mycog&#232;ne", "Sacratorium_de_Mycogène",
+                     "Lois_de_la_Robotique", "Deuxi&#232;me_Loi", "Deuxième_Loi", "Ancien", "Anciens"]:
+                characters.append(line.strip().split()[0])
     return set(characters)  # Utilisation d'un ensemble pour éviter les doublons
 
 
@@ -17,40 +40,63 @@ def build_graph(characters, tokens):
     characters_mapping = {}  # Pour stocker les alias de chaque personnage
 
     for character in characters:
-        characters_mapping[character] = [character.lower()]  # Initialise avec le nom du personnage
+        characters_mapping[character] = [character]  # Initialise avec le nom du personnage
 
-    for i, token in enumerate(tokens[:-1]):  # Correction ici pour éviter l'index out of range
+    for i, token in enumerate(tokens):  # Correction ici pour éviter l'index out of range
         for character in characters:
-            if character.lower() in token.lower():
+            if character in token:
                 for other_character in characters:
-                    if character.lower() in other_character.lower() or other_character.lower() in character.lower(): # Pour les alias
+                    if character.lower() in other_character.lower() or other_character.lower() in character.lower() :
                         # Co-occurrence détectée, met à jour les alias
                         characters_mapping[character].extend(characters_mapping[other_character])
                         characters_mapping[character] = list(set(characters_mapping[character]))  # Supprime les doublons
 
-    # print(characters_mapping[character])
+    #print(characters_mapping[character])
 
     for character, aliases in characters_mapping.items():
         aliases_str = ";".join(aliases)
-        # print(aliases_str)
-        G.add_node(character, names=aliases_str)  # Ajoute le nœud avec la liste d'alias
+        if aliases_str.strip():  # Vérifie si le contenu de l'alias n'est pas vide
+            existing_nodes = [node for node, data in G.nodes(data=True) if
+                              data.get('names') == aliases_str.replace('_', ' ')]
+            if existing_nodes:
+                print("existing node")
+                # G.add_node(existing_node, names=aliases_str.replace('_', ' '))
+            else:
+                G.add_node(character.replace('_', ' '), names=aliases_str.replace('_', ' '))
 
     # Analyse des co-occurrences des entités dans les 25 tokens suivants
-    for i, token in enumerate(tokens[:-1]):  # Correction ici pour éviter l'index out of range
+    for i, token in enumerate(tokens):
         for character in characters:
             if character.lower() in token.lower():
                 for j in range(i + 1, min(i + 26, len(tokens))):
                     for other_character in characters:
                         if other_character != character and other_character.lower() in tokens[j].lower():
-                            if G.has_edge(character, other_character):
-                                G[character][other_character]['weight'] += 1
-                            else:
-                                G.add_edge(character, other_character, weight=1)
+                            if character in G.nodes and other_character in G.nodes:
+                                # Vérifier si le personnage est un alias d'un autre
+                                if character.lower() in [alias.lower() for alias in characters_mapping[other_character]] \
+                                        or other_character.lower() in [alias.lower() for alias in
+                                                                       characters_mapping[character]]:
+                                    # Si oui, incrémenter le poids vers le nœud parent
+                                    parent_node = [alias for alias in characters_mapping.keys() if
+                                                   character.lower() != alias.lower() and
+                                                   other_character.lower() in [a.lower() for a in
+                                                                               characters_mapping[alias]]][0]
+                                    if G.has_edge(parent_node, other_character):
+                                        G[parent_node][other_character]['weight'] += 1
+
+                                else:
+                                    # Sinon, ajouter un edge entre les personnages s'ils ne sont pas dans leurs alias
+                                    if character not in characters_mapping[other_character] and other_character not in \
+                                            characters_mapping[character]:
+                                        if G.has_edge(character, other_character):
+                                            G[character][other_character]['weight'] += 1
+                                        else:
+                                            G.add_edge(character, other_character, weight=1)
 
     # Suppression des liens entre un personnage et lui-même
     for character in characters:
-        if G.has_edge(character, character):
-            G.remove_edge(character, character)
+        if G.has_edge(character.replace('_', ' '), character.replace('_', ' ')):
+            G.remove_edge(character.replace('_', ' '), character.replace('_', ' '))
 
     return G
 
