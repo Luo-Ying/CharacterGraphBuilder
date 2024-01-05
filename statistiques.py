@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 import string
 import json
+import re
 
 def checkAndCreateFoldert(folder_path):
 
@@ -183,7 +184,7 @@ def getEntityNameList(file_to_read_EntityName):
             line = file_read.readline()
     return entityName_list
 
-# TODO: Enlever aussi les tops words 
+
 def getNumberOfEntityNameInEachContext(file_to_read_context, file_to_read_EntityName):
     
     entityName_list = getEntityNameList(file_to_read_EntityName)
@@ -204,6 +205,65 @@ def getNumberOfEntityNameInEachContext(file_to_read_context, file_to_read_Entity
             line = file_read.readline()
             
     return nbEntityNameInEachContext
+
+
+def modifyLine(line, entityname_list):
+    for entityname in entityname_list:
+        if '_' in entityname:
+            new_entity = entityname.replace('_', ' ')
+            line = line.replace(new_entity, entityname)
+    return line
+
+def remove_punctuation_if_right_empty(text):
+    pattern = re.compile(r'([^\w\s])\s')
+    matches = re.finditer(pattern, text)
+
+    for match in matches:
+        punctuation = match.group(1)
+        text = text.replace(match.group(0), punctuation)
+
+    return text
+
+def getNumberOfWordsBetweenEachEntityname(file_to_read_source, file_to_read_EntityName):
+    
+    entityName_list = getEntityNameList(file_to_read_EntityName)
+    
+    nbWordsBetweenEachEntityname = []
+    
+    with open(file_to_read_source, 'r', encoding='utf-8') as file_read:
+        countWords = 0
+        isStart = False
+        line = file_read.readline()
+        while line:
+            line = modifyLine(line, entityname_list=entityName_list)
+            arr = []
+            words = line.split(' ')
+            if words:
+                for word in words:
+                    word = remove_punctuation_if_right_empty(word)
+                    if word == ' ' or len(word)<=0:
+                        continue
+                    # print(word)
+                    isContain = False
+                    for entityname in entityName_list:
+                        if len(word) <= 3 and word == entityname:
+                            isContain = True
+                        elif len(word) > 3 and word in entityname:
+                            isContain = True
+                    if isContain and not isStart:
+                        isStart = True
+                        countWords = 0
+                        arr.append((word,'PER'))
+                    elif isContain and isStart:
+                        nbWordsBetweenEachEntityname.append(countWords)
+                        countWords = 0
+                        arr.append((word,'PER'))
+                    else :
+                        countWords += 1
+                        arr.append((word,'O'))
+            line = file_read.readline()
+    return nbWordsBetweenEachEntityname
+                    
             
 
 def getMinValueInList(lst):
@@ -258,6 +318,8 @@ def statistiques():
     
     folder_source = "corpus/corpus_asimov_leaderboard/"
     
+    folder_source_pretread = "corpus/corpus_reformed/"
+    
     folder_Freeling = "corpus/corpus_treated_by_Freeling/"
     folder_tokens = "corpus/corpus_tokens/"
     folder_entityName = "corpus/corpus_treated_merge_of_Freeling&Spacy/"
@@ -270,6 +332,10 @@ def statistiques():
         
         nbEntityNamePerChapter = []
         
+        nbTimesDistance = 0
+        sumDistanceTotale = 0
+        sumOfMedianDistance = 0
+        
         if os.path.exists(folder_statistiques + dir)==False: os.makedirs(folder_statistiques + dir)
         files = os.listdir(folder_tokens + dir)
         for file in files:
@@ -278,6 +344,7 @@ def statistiques():
             
             # with open(file_to_write, 'w', encoding='utf-8') as file_write:
             file_to_read_source = folder_source + dir + "/" + file + ".preprocessed"
+            file_to_read_source_pretread = folder_source_pretread + dir + "/" + file
             file_to_read_Freeling = folder_Freeling + dir + "/" + file
             file_to_read_tokens = folder_tokens + dir + "/" + file
             file_to_read_entityName = folder_entityName + dir + "/" + file
@@ -308,6 +375,11 @@ def statistiques():
             nbEntityNameInChapiter = len(getEntityNameList(file_to_read_entityName))
             nbEntityNamePerChapter.append(nbEntityNameInChapiter)
             nbEntityNameInEachContext = getNumberOfEntityNameInEachContext(file_to_read_tokens, file_to_read_entityName)
+            nbWordsBetweenEntityname = getNumberOfWordsBetweenEachEntityname(file_to_read_source_pretread, file_to_read_entityName)
+            print(len(nbWordsBetweenEntityname))
+            nbTimesDistance += len(nbWordsBetweenEntityname)
+            sumDistanceTotale += sum(nbWordsBetweenEntityname)
+            
             
             min_nbWordsPerSentence = getMinValueInList(nbWordsPerSentence)
             max_nbWordsPerSentence = getMaxValueInList(nbWordsPerSentence)
@@ -319,10 +391,18 @@ def statistiques():
             median_nbWordsPerParagraph = getMedianValueInList(nbWordsPerParagraph)
             average_nbWordsPerParagraph = getAverageValueInList(nbWordsPerParagraph)
             
+            
             min_nbEntityNameInEachContext = getMinValueInList(nbEntityNameInEachContext)
             max_nbEntityNameInEachContext = getMaxValueInList(nbEntityNameInEachContext)
             median_nbEntityNameInEachContext = getMedianValueInList(nbEntityNameInEachContext)
             average_nbEntityNameInEachContext = getAverageValueInList(nbEntityNameInEachContext)
+            
+            min_nbWordsBetweenEntityname = getMinValueInList(nbWordsBetweenEntityname)
+            max_nbWordsBetweenEntityname = getMaxValueInList(nbWordsBetweenEntityname)
+            median_nbWordsBetweenEntityname = getMedianValueInList(nbWordsBetweenEntityname)
+            average_nbWordsBetweenEntityname = getAverageValueInList(nbWordsBetweenEntityname)
+            
+            sumOfMedianDistance += median_nbWordsBetweenEntityname
             
             data = {
                 "words_in_phrase":{
@@ -358,7 +438,14 @@ def statistiques():
                     "median": median_nbEntityNameInEachContext,
                     "average": average_nbEntityNameInEachContext
                 },
-                "context_in-chapter": nbEntityNameInEachContext
+                "words_between_entityname": {
+                    "data": nbWordsBetweenEntityname,
+                    "min": min_nbWordsBetweenEntityname,
+                    "max": max_nbWordsBetweenEntityname,
+                    "median": median_nbWordsBetweenEntityname,
+                    "average": average_nbWordsBetweenEntityname
+                },
+                "context_in_chapter": len(nbEntityNameInEachContext)
             }
             
             formatted_json = json_serialize_with_inline_arrays(data)
@@ -373,6 +460,8 @@ def statistiques():
         median_stat_entityname_in_book = getMedianValueInList(nbEntityNamePerChapter)
         average_stat_entityname_in_book = getAverageValueInList(nbEntityNamePerChapter)
         
+        
+        
         data_stat_book = {
             "entitynale_in_book": {
                 "data": nbEntityNamePerChapter,
@@ -380,7 +469,9 @@ def statistiques():
                 "max": max_stat_entityname_in_book,
                 "median": median_stat_entityname_in_book,
                 "average": average_stat_entityname_in_book
-                }
+                },
+            "average_distance_between_entityname": round(sumDistanceTotale/nbTimesDistance, 2),
+            "median_distance_beetween_entityname": round(sumOfMedianDistance/18, 2)
             
         }
         formatted_json_stat_book = json_serialize_with_inline_arrays(data_stat_book)
