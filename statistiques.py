@@ -168,16 +168,10 @@ def getNumberOfStopWords(file_to_read):
     return countStopWords
 
 
-# TODO: Enlever aussi les tops words 
-def getNumberOfEntityNameInEachContext(file_to_read_context, file_to_read_EntityName):
-    
+def getEntityNameList(file_to_read_EntityName):
     entityName_list = []
-    
-    nbEntityNameInEachContext = []
-    
     with open('stopWords', 'r', encoding='utf-8') as file:
         stopWords = [line.strip() for line in file]
-    
     # Get entity name list
     with open(file_to_read_EntityName, 'r', encoding='utf-8') as file_read:
         line = file_read.readline()
@@ -187,6 +181,14 @@ def getNumberOfEntityNameInEachContext(file_to_read_context, file_to_read_Entity
                 if words[0] != "" and words[0] not in stopWords: # and words[0] not in stopwords
                     entityName_list.append(words[0])
             line = file_read.readline()
+    return entityName_list
+
+# TODO: Enlever aussi les tops words 
+def getNumberOfEntityNameInEachContext(file_to_read_context, file_to_read_EntityName):
+    
+    entityName_list = getEntityNameList(file_to_read_EntityName)
+    
+    nbEntityNameInEachContext = []
     
     with open(file_to_read_context, 'r', encoding='utf-8') as file_read:
         countEntityName = 0
@@ -265,6 +267,9 @@ def statistiques():
     path = Path(folder_tokens)
     subdirectories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
     for dir in subdirectories:
+        
+        nbEntityNamePerChapter = []
+        
         if os.path.exists(folder_statistiques + dir)==False: os.makedirs(folder_statistiques + dir)
         files = os.listdir(folder_tokens + dir)
         for file in files:
@@ -283,13 +288,25 @@ def statistiques():
             nbWordsPerParagraph = getNumberOfWordsPerParagraph(file_to_read_source)   
             # Nombre de mots dans le chapitre
             nbWordsOfChapter = getAllCharactersInChapiter(file_to_read_source)
+            
             nbUppercase = getNumberOfUppercase(file_to_read_source)
+            uppercasePercent = round(nbUppercase/nbWordsOfChapter, 2)
+            
             nbLowercase = getNumberOfLowercase(file_to_read_source)
+            lowercasePercent = round(nbLowercase/nbWordsOfChapter, 2)
+            
             nbCapitalized = getNumberOfCapitalized(file_to_read_source)
+            capitalizedPercent = round(nbCapitalized/nbWordsOfChapter, 2)
+            
             nbOther = getNumberOfOther(file_to_read_source)
+            otherPercent = round(nbOther/nbWordsOfChapter, 2)
             
             
             nbStopWordsOfChpter = getNumberOfStopWords(file_to_read_Freeling)
+            stopWordsPercent = round(nbStopWordsOfChpter/nbWordsOfChapter, 2)
+            
+            nbEntityNameInChapiter = len(getEntityNameList(file_to_read_entityName))
+            nbEntityNamePerChapter.append(nbEntityNameInChapiter)
             nbEntityNameInEachContext = getNumberOfEntityNameInEachContext(file_to_read_tokens, file_to_read_entityName)
             
             min_nbWordsPerSentence = getMinValueInList(nbWordsPerSentence)
@@ -324,10 +341,16 @@ def statistiques():
                 },
                 "words_in_chapter": nbWordsOfChapter,
                 "uppercase": nbUppercase,
+                "uppercase_%": uppercasePercent,
                 "lowercase": nbLowercase,
+                "lowercase_%": lowercasePercent,
                 "capitalized": nbCapitalized,
+                "capitalized_%": capitalizedPercent,
                 "other": nbOther,
+                "other_%": otherPercent,
                 "stop_words": nbStopWordsOfChpter,
+                "stop_words_%": stopWordsPercent,
+                "entityName_in_chapiter": nbEntityNameInChapiter,
                 "entityName_in_context": {
                     "data": nbEntityNameInEachContext,
                     "min": min_nbEntityNameInEachContext,
@@ -343,42 +366,26 @@ def statistiques():
             with open(file_to_write, 'w', encoding='utf-8') as file_write:
                 file_write.write(formatted_json)
                 
-                # file_write.write("{")
+        file_to_write_stat_of_book = folder_statistiques + dir + "/statistique_of_book.json"
+        
+        min_stat_entityname_in_book = getMinValueInList(nbEntityNamePerChapter)
+        max_stat_entityname_in_book = getMaxValueInList(nbEntityNamePerChapter)
+        median_stat_entityname_in_book = getMedianValueInList(nbEntityNamePerChapter)
+        average_stat_entityname_in_book = getAverageValueInList(nbEntityNamePerChapter)
+        
+        data_stat_book = {
+            "entitynale_in_book": {
+                "data": nbEntityNamePerChapter,
+                "min": min_stat_entityname_in_book,
+                "max": max_stat_entityname_in_book,
+                "median": median_stat_entityname_in_book,
+                "average": average_stat_entityname_in_book
+                }
+            
+        }
+        formatted_json_stat_book = json_serialize_with_inline_arrays(data_stat_book)
+        with open(file_to_write_stat_of_book, 'w', encoding='utf-8') as file_write:
+            file_write.write(formatted_json_stat_book)
                 
-                # file_write.write('"mots_par_phrase": {')
-                # file_write.write('"data":' + str(nbWordsPerSentence) + ",")
-                # file_write.write('"Min":' + str(min_nbWordsPerSentence) + ",")
-                # file_write.write('"Max":' + str(max_nbWordsPerSentence) + ",")
-                # file_write.write('"Median":' + str(median_nbWordsPerSentence) + ",")
-                # file_write.write('"Average":' + str(average_nbWordsPerSentence) + "},")
-                
-                # file_write.write("mots_par_paragraph:" + str(nbWordsPerParagraph) + "\n")
-                # file_write.write("Min:" + str(min_nbWordsPerParagraph) + "\n")
-                # file_write.write("Max:" + str(max_nbWordsPerParagraph) + "\n")
-                # file_write.write("Median:" + str(median_nbWordsPerParagraph) + "\n")
-                # file_write.write("Average:" + str(average_nbWordsPerParagraph) + "\n\n")
-                
-                # file_write.write("Nombre de mots totale dans le chapitre\n" + str(nbWordsOfChapter) + "\n\n")
-                
-                # file_write.write("Nombre d'uppercase\n" + str(nbUppercase) + "\n\n")
-                
-                # file_write.write("Nombre de lowercase\n" + str(nbLowercase) + "\n\n")
-                
-                # file_write.write("Nombre de capitalized\n" + str(nbCapitalized) + "\n\n")
-                
-                # file_write.write("Nombre de other\n" + str(nbOther) + "\n\n")
-                
-                # file_write.write("Nombre de stopwords\n" + str(nbStopWordsOfChpter) + "\n\n")
-                
-                
-                # file_write.write("entityname_par_context:" + str(nbEntityNameInEachContext) + "\n")
-                # file_write.write("Min:" + str(min_nbEntityNameInEachContext) + "\n")
-                # file_write.write("Max:" + str(max_nbEntityNameInEachContext) + "\n")
-                # file_write.write("Median:" + str(median_nbEntityNameInEachContext) + "\n")
-                # file_write.write("Average:" + str(average_nbEntityNameInEachContext) + "\n\n")
-                
-                # file_write.write("Nombre de context totale dans le chapitre\n" + str(len(nbEntityNameInEachContext)) + "\n\n")
-
-                # file_write.write("}")
 statistiques()
 

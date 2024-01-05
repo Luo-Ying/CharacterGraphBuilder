@@ -25,24 +25,6 @@ def drawData(chapterName):
             array_entityname_per_context = data["entityName_in_context"]["data"]
             
             all_arr.append(array_entityname_per_context)
-        # with open(file_path, 'r', encoding='utf-8') as file_read:
-        #     line = file_read.readline()
-        #     while line:
-        #         # print(line)
-        #         if "mots_par_phrase" in line:
-        #             elements = line.split(':')
-        #             str_data = elements[1].strip("[] \n")
-        #             array_words_per_phrase = [int(x) for x in str_data.split(", ")]
-        #         if "mots_par_paragraph" in line:
-        #             elements = line.split(':')
-        #             str_data = elements[1].strip("[] \n")
-        #             array_words_per_paragraph = [int(x) for x in str_data.split(", ")]
-        #         if "entityname_par_context" in line:
-        #             elements = line.split(':')
-        #             str_data = elements[1].strip("[] \n")
-        #             array_entityname_per_context = [int(x) for x in str_data.split(", ")]
-        #             all_arr.append(array_entityname_per_context)
-        #         line = file_read.readline()
             
     draw2Dplot(all_arr, f"Entity name in {chapterName}")
     
