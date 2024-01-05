@@ -264,7 +264,18 @@ def getNumberOfWordsBetweenEachEntityname(file_to_read_source, file_to_read_Enti
             line = file_read.readline()
     return nbWordsBetweenEachEntityname
                     
-            
+
+def getPercentNP(file_to_read):
+    
+    f_in = open(file_to_read, "r", encoding="utf-8")
+    content = f_in.read()
+    f_in.close()
+
+    content = [c.split(" ")[2] for c in content.split("\n") if len(c) > 0]
+    are_np = [c.startswith("NP") for c in content]
+
+    percentNP = round(sum(are_np) / len(are_np), 2)
+    return percentNP
 
 def getMinValueInList(lst):
     
@@ -421,16 +432,18 @@ def statistiques():
                 },
                 "words_in_chapter": nbWordsOfChapter,
                 "uppercase": nbUppercase,
-                "uppercase_%": uppercasePercent,
+                "uppercase_%": uppercasePercent * 100,
                 "lowercase": nbLowercase,
-                "lowercase_%": lowercasePercent,
+                "lowercase_%": lowercasePercent * 100,
                 "capitalized": nbCapitalized,
-                "capitalized_%": capitalizedPercent,
+                "capitalized_%": capitalizedPercent * 100,
                 "other": nbOther,
-                "other_%": otherPercent,
+                "other_%": otherPercent * 100,
                 "stop_words": nbStopWordsOfChpter,
-                "stop_words_%": stopWordsPercent,
+                "stop_words_%": stopWordsPercent * 100,
+                "proper_noun_%": getPercentNP(file_to_read_Freeling) * 100,
                 "entityName_in_chapiter": nbEntityNameInChapiter,
+                "entityname_%": round(nbEntityNameInChapiter/nbWordsOfChapter, 2) * 100,
                 "entityName_in_context": {
                     "data": nbEntityNameInEachContext,
                     "min": min_nbEntityNameInEachContext,
