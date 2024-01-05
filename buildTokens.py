@@ -9,8 +9,8 @@ def buildTokens(file_to_read, file_to_write):
     with open(file_to_write, 'w', encoding='utf-8') as file_write:
         for i in range(len(lines)):
             content = ''
-            chunk = lines[i:i+25]
-            if len(chunk) < 25:
+            chunk = lines[i:i+60]
+            if len(chunk) < 60:
                 break
             for line in chunk:
                 words = line.split()
