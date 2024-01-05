@@ -265,6 +265,17 @@ def getNumberOfWordsBetweenEachEntityname(file_to_read_source, file_to_read_Enti
     return nbWordsBetweenEachEntityname
                     
 
+def getCountNP(file_to_read):
+    
+    f_in = open(file_to_read, "r", encoding="utf-8")
+    content = f_in.read()
+    f_in.close()
+
+    content = [c.split(" ")[2] for c in content.split("\n") if len(c) > 0]
+    are_np = [c.startswith("NP") for c in content]
+
+    return sum(are_np)
+
 def getPercentNP(file_to_read):
     
     f_in = open(file_to_read, "r", encoding="utf-8")
@@ -341,15 +352,34 @@ def statistiques():
     subdirectories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
     for dir in subdirectories:
         
+        nbChapter = 0
+        
         nbEntityNamePerChapter = []
         
         nbTimesDistance = 0
         sumDistanceTotale = 0
         sumOfMedianDistance = 0
         
+        sumAverageWordsOfPhrase = 0
+        sumAverageWordsOfParagraph = 0
+        
+        sumWordsInChapter = 0
+        sumUppercase = 0
+        sumLowercase = 0
+        sumCapitalized = 0
+        sumOther = 0
+        
+        sumStopWords = 0
+        sumProperNoun = 0
+        sumEntityname = 0
+        
+        sumEntitynameInContextAverage = 0
+        
         if os.path.exists(folder_statistiques + dir)==False: os.makedirs(folder_statistiques + dir)
         files = os.listdir(folder_tokens + dir)
         for file in files:
+            
+            nbChapter += 1
             
             file_to_write = folder_statistiques + dir + "/" + file + ".json"
             
@@ -367,23 +397,42 @@ def statistiques():
             # Nombre de mots dans le chapitre
             nbWordsOfChapter = getAllCharactersInChapiter(file_to_read_source)
             
+            sumWordsInChapter += nbWordsOfChapter
+            
             nbUppercase = getNumberOfUppercase(file_to_read_source)
             uppercasePercent = round(nbUppercase/nbWordsOfChapter, 2)
+            
+            sumUppercase += (uppercasePercent * 100)
             
             nbLowercase = getNumberOfLowercase(file_to_read_source)
             lowercasePercent = round(nbLowercase/nbWordsOfChapter, 2)
             
+            sumLowercase += (lowercasePercent * 100)
+            
             nbCapitalized = getNumberOfCapitalized(file_to_read_source)
             capitalizedPercent = round(nbCapitalized/nbWordsOfChapter, 2)
             
+            sumCapitalized += (capitalizedPercent * 100)
+            
             nbOther = getNumberOfOther(file_to_read_source)
             otherPercent = round(nbOther/nbWordsOfChapter, 2)
+            
+            sumOther += (otherPercent * 100)
             
             
             nbStopWordsOfChpter = getNumberOfStopWords(file_to_read_Freeling)
             stopWordsPercent = round(nbStopWordsOfChpter/nbWordsOfChapter, 2)
             
+            sumStopWords += (stopWordsPercent * 100)
+            
+            properNoun = getCountNP(file_to_read_Freeling)
+            properNounPercent = getPercentNP(file_to_read_Freeling) * 100
+            sumProperNoun += properNounPercent
+            
             nbEntityNameInChapiter = len(getEntityNameList(file_to_read_entityName))
+            entitynamePercent = round(nbEntityNameInChapiter/nbWordsOfChapter, 2) * 100
+            sumEntityname += entitynamePercent
+            
             nbEntityNamePerChapter.append(nbEntityNameInChapiter)
             nbEntityNameInEachContext = getNumberOfEntityNameInEachContext(file_to_read_tokens, file_to_read_entityName)
             nbWordsBetweenEntityname = getNumberOfWordsBetweenEachEntityname(file_to_read_source_pretread, file_to_read_entityName)
@@ -396,17 +445,21 @@ def statistiques():
             max_nbWordsPerSentence = getMaxValueInList(nbWordsPerSentence)
             median_nbWordsPerSentence = getMedianValueInList(nbWordsPerSentence)
             average_nbWordsPerSentence = getAverageValueInList(nbWordsPerSentence)
+            sumAverageWordsOfPhrase += average_nbWordsPerSentence
             
             min_nbWordsPerParagraph = getMinValueInList(nbWordsPerParagraph)
             max_nbWordsPerParagraph = getMaxValueInList(nbWordsPerParagraph)
             median_nbWordsPerParagraph = getMedianValueInList(nbWordsPerParagraph)
             average_nbWordsPerParagraph = getAverageValueInList(nbWordsPerParagraph)
+            sumAverageWordsOfParagraph += average_nbWordsPerParagraph
             
             
             min_nbEntityNameInEachContext = getMinValueInList(nbEntityNameInEachContext)
             max_nbEntityNameInEachContext = getMaxValueInList(nbEntityNameInEachContext)
             median_nbEntityNameInEachContext = getMedianValueInList(nbEntityNameInEachContext)
             average_nbEntityNameInEachContext = getAverageValueInList(nbEntityNameInEachContext)
+            
+            sumEntitynameInContextAverage += average_nbEntityNameInEachContext
             
             min_nbWordsBetweenEntityname = getMinValueInList(nbWordsBetweenEntityname)
             max_nbWordsBetweenEntityname = getMaxValueInList(nbWordsBetweenEntityname)
@@ -441,9 +494,10 @@ def statistiques():
                 "other_%": otherPercent * 100,
                 "stop_words": nbStopWordsOfChpter,
                 "stop_words_%": stopWordsPercent * 100,
-                "proper_noun_%": getPercentNP(file_to_read_Freeling) * 100,
+                "proper_noun": properNoun,
+                "proper_noun_%": properNounPercent,
                 "entityName_in_chapiter": nbEntityNameInChapiter,
-                "entityname_%": round(nbEntityNameInChapiter/nbWordsOfChapter, 2) * 100,
+                "entityname_%": entitynamePercent,
                 "entityName_in_context": {
                     "data": nbEntityNameInEachContext,
                     "min": min_nbEntityNameInEachContext,
@@ -476,15 +530,26 @@ def statistiques():
         
         
         data_stat_book = {
-            "entitynale_in_book": {
+            "phrase_in_chapter_average_words": round(sumAverageWordsOfPhrase/nbChapter, 2),
+            "paragraph_in_chapter_average_words": round(sumAverageWordsOfParagraph/nbChapter, 2),
+            "chapter_average_words": round(sumWordsInChapter/nbChapter, 2),
+            "uppercase_book_%": round(sumUppercase/nbChapter, 2),
+            "lowercase_book_%": round(sumLowercase/nbChapter, 2),
+            "capitalized_book_%": round(sumCapitalized/nbChapter, 2),
+            "other_book_%": round(sumOther/nbChapter, 2),
+            "stop_words_%": round(sumStopWords/nbChapter, 2),
+            "proper_noun_%": round(sumProperNoun/nbChapter, 2),
+            "entityname_%": round(sumEntityname/nbChapter, 2),
+            "entityname_book": {
                 "data": nbEntityNamePerChapter,
-                "min": min_stat_entityname_in_book,
-                "max": max_stat_entityname_in_book,
-                "median": median_stat_entityname_in_book,
-                "average": average_stat_entityname_in_book
+                "min_entity_per_chapter": min_stat_entityname_in_book,
+                "max_entity_per_chapter": max_stat_entityname_in_book,
+                "median_entity_per_chapter": median_stat_entityname_in_book,
+                "average_entity_per_chapter": average_stat_entityname_in_book
                 },
+            "entityname_context_average": round(sumEntitynameInContextAverage/nbChapter, 2),
             "average_distance_between_entityname": round(sumDistanceTotale/nbTimesDistance, 2),
-            "median_distance_beetween_entityname": round(sumOfMedianDistance/18, 2)
+            "median_distance_beetween_entityname": round(sumOfMedianDistance/nbChapter, 2)
             
         }
         formatted_json_stat_book = json_serialize_with_inline_arrays(data_stat_book)
