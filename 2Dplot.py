@@ -20,11 +20,12 @@ def drawData(chapterName):
     
     for file_name in os.listdir(f"corpus/corpus_statistiques/{chapterName}/"):
         file_path = f"corpus/corpus_statistiques/{chapterName}/" + file_name
-        with open(file_path, 'r', encoding='utf-8') as file_read:
-            data = json.load(file_read)
-            array_entityname_per_context = data["entityName_in_context"]["data"]
-            
-            all_arr.append(array_entityname_per_context)
+        if file_path != f"corpus/corpus_statistiques/{chapterName}/statistique_of_book.json":
+            with open(file_path, 'r', encoding='utf-8') as file_read:
+                data = json.load(file_read)
+                array_entityname_per_context = data["entityName_in_context"]["data"]
+                
+                all_arr.append(array_entityname_per_context)
             
     draw2Dplot(all_arr, f"Entity name in {chapterName}")
     

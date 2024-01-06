@@ -195,10 +195,22 @@ def getNumberOfEntityNameInEachContext(file_to_read_context, file_to_read_Entity
         countEntityName = 0
         line = file_read.readline()
         while line:
+            line = modifyLine(line, entityname_list=entityName_list)
             words = line.split()
             if words:
                 for word in words:
-                    if word in entityName_list:
+                    word = remove_punctuation_before_space(word)
+                    if word == ' ' or len(word)<=1:
+                        continue
+                    isContain = False
+                    for entityname in entityName_list:
+                        # if len(word) <= 3 and word == entityname:
+                        #     isContain = True
+                        # elif len(word) > 3 and word in entityname:
+                        #     isContain = True
+                        if (word.replace(',', '')) == entityname:
+                            isContain = True
+                    if isContain:
                         countEntityName += 1
             nbEntityNameInEachContext.append(countEntityName)
             countEntityName = 0
@@ -248,7 +260,7 @@ def getNumberOfWordsBetweenEachEntityname(file_to_read_source, file_to_read_Enti
             if words:
                 for word in words:
                     word = remove_punctuation_before_space(word)
-                    if word == ' ' or len(word)<=0:
+                    if word == ' ' or len(word)<=1:
                         continue
                     # print(word)
                     isContain = False
