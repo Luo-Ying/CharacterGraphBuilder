@@ -224,6 +224,13 @@ def remove_punctuation_if_right_empty(text):
 
     return text
 
+def remove_punctuation_before_space(text):
+    pattern = r'([.,!?;:])\s'
+    
+    result = re.sub(pattern, ' ', text)
+
+    return result
+
 def getNumberOfWordsBetweenEachEntityname(file_to_read_source, file_to_read_EntityName):
     
     entityName_list = getEntityNameList(file_to_read_EntityName)
@@ -240,15 +247,17 @@ def getNumberOfWordsBetweenEachEntityname(file_to_read_source, file_to_read_Enti
             words = line.split(' ')
             if words:
                 for word in words:
-                    word = remove_punctuation_if_right_empty(word)
+                    word = remove_punctuation_before_space(word)
                     if word == ' ' or len(word)<=0:
                         continue
                     # print(word)
                     isContain = False
                     for entityname in entityName_list:
-                        if len(word) <= 3 and word == entityname:
-                            isContain = True
-                        elif len(word) > 3 and word in entityname:
+                        # if len(word) <= 3 and word == entityname:
+                        #     isContain = True
+                        # elif len(word) > 3 and word in entityname:
+                        #     isContain = True
+                        if (word.replace(',', '')) == entityname:
                             isContain = True
                     if isContain and not isStart:
                         isStart = True
@@ -258,12 +267,12 @@ def getNumberOfWordsBetweenEachEntityname(file_to_read_source, file_to_read_Enti
                         nbWordsBetweenEachEntityname.append(countWords)
                         countWords = 0
                         arr.append((word,'PER'))
-                    else :
+                    else:
                         countWords += 1
                         arr.append((word,'O'))
             line = file_read.readline()
     return nbWordsBetweenEachEntityname
-                    
+
 
 def getCountNP(file_to_read):
     
@@ -359,6 +368,8 @@ def statistiques():
         nbTimesDistance = 0
         sumDistanceTotale = 0
         sumOfMedianDistance = 0
+        sumOfMinDistance = 0
+        sumOfMaxDistance = 0
         
         sumAverageWordsOfPhrase = 0
         sumAverageWordsOfParagraph = 0
@@ -374,6 +385,7 @@ def statistiques():
         sumEntityname = 0
         
         sumEntitynameInContextAverage = 0
+        sumEntitynameInContextMedian = 0
         
         if os.path.exists(folder_statistiques + dir)==False: os.makedirs(folder_statistiques + dir)
         files = os.listdir(folder_tokens + dir)
@@ -460,6 +472,7 @@ def statistiques():
             average_nbEntityNameInEachContext = getAverageValueInList(nbEntityNameInEachContext)
             
             sumEntitynameInContextAverage += average_nbEntityNameInEachContext
+            sumEntitynameInContextAverage += median_nbEntityNameInEachContext
             
             min_nbWordsBetweenEntityname = getMinValueInList(nbWordsBetweenEntityname)
             max_nbWordsBetweenEntityname = getMaxValueInList(nbWordsBetweenEntityname)
@@ -467,6 +480,8 @@ def statistiques():
             average_nbWordsBetweenEntityname = getAverageValueInList(nbWordsBetweenEntityname)
             
             sumOfMedianDistance += median_nbWordsBetweenEntityname
+            sumOfMinDistance += min_nbWordsBetweenEntityname
+            sumOfMaxDistance += max_nbWordsBetweenEntityname
             
             data = {
                 "words_in_phrase":{
@@ -533,7 +548,7 @@ def statistiques():
             "phrase_in_chapter_average_words": round(sumAverageWordsOfPhrase/nbChapter, 2),
             "paragraph_in_chapter_average_words": round(sumAverageWordsOfParagraph/nbChapter, 2),
             "chapter_average_words": round(sumWordsInChapter/nbChapter, 2),
-            "uppercase_book_%": round(sumUppercase/nbChapter, 2),
+            "uppercase_book_%": round(sumUppercase/nbChapter, 4),
             "lowercase_book_%": round(sumLowercase/nbChapter, 2),
             "capitalized_book_%": round(sumCapitalized/nbChapter, 2),
             "other_book_%": round(sumOther/nbChapter, 2),
@@ -548,6 +563,9 @@ def statistiques():
                 "average_entity_per_chapter": average_stat_entityname_in_book
                 },
             "entityname_context_average": round(sumEntitynameInContextAverage/nbChapter, 2),
+            "entityname_context_median": round(sumEntitynameInContextMedian/nbChapter, 2),
+            # "min_distance_beetween_entityname": round(sumOfMinDistance/nbChapter, 2),
+            # "max_distance_beetween_entityname": round(sumOfMaxDistance/nbChapter, 2),
             "average_distance_between_entityname": round(sumDistanceTotale/nbTimesDistance, 2),
             "median_distance_beetween_entityname": round(sumOfMedianDistance/nbChapter, 2)
             
