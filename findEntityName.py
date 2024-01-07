@@ -4,6 +4,8 @@ import subprocess
 # import fr_core_news_lg
 import os
 from pathlib import Path
+from transformers import AutoTokenizer, AutoModelForTokenClassification
+from transformers import pipeline
 
 
 def useModelSpacy(nlp, file_to_read, file_spacy_result):
@@ -36,6 +38,22 @@ def useFreeling(file_freeling_result):
     with open(file_freeling_result, 'w', encoding='utf-8') as file:
         file.writelines(filtered_PER)
 
+def useModelCamembert(model, tokenizer, file_to_read, file_camembert_result):
+    with open(file_to_read, 'r', encoding='utf-8') as file:
+        file_content = file.read()
+
+    nlp = pipeline('ner', model=model, tokenizer=tokenizer, aggregation_strategy="simple")
+    personnages = nlp(file_content)
+
+    persons = [(person['word'], person['entity_group']) for person in personnages if person['entity_group'] == 'PER']
+
+    with open(file_camembert_result, 'w', encoding='utf-8') as output_file:
+        for item in persons:
+            item1 = item[0].replace('\n', ' ')
+            item1 = item1.replace(' ', '_')
+            item2 = item[1].replace('\n', ' ')
+            item2 = item2.replace(' ', '_')
+            output_file.write(f'{item1} {item2}\n')
     
 def mergeResult(file_freeling_result, file_spacy_result, file_merge_results_of_2_models):
     with open(file_freeling_result, 'r', encoding='utf-8') as file:
@@ -79,7 +97,7 @@ def checkAndCreateFoldert(folder_path):
 
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
-        
+
 
 def findEntityName():
     
@@ -89,24 +107,31 @@ def findEntityName():
     folder_freeling_result = "corpus/corpus_treated_by_Freeling/"
     
     folder_merge = "corpus/corpus_treated_merge_of_Freeling&Spacy/"
-    
-    
+    folder_camembert_result = "corpus/corpus_treated_by_Camembert/"
+
     print(subprocess.getoutput("python -m spacy download fr_core_news_md"))
     nlp = spacy.load("fr_core_news_md")
     # nlp_fr = fr_core_news_lg.load()
-    
+
+    tokenizer = AutoTokenizer.from_pretrained("Jean-Baptiste/camembert-ner")
+    model = AutoModelForTokenClassification.from_pretrained("Jean-Baptiste/camembert-ner")
+
     checkAndCreateFoldert(folder_spacy_result)
-    
+    checkAndCreateFoldert(folder_camembert_result)
+
     path = Path(corpus_reformed)
     subdirectories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
     for dir in subdirectories:
         if os.path.exists(folder_spacy_result + dir)==False: os.makedirs(folder_spacy_result + dir)
+        if os.path.exists(folder_camembert_result + dir) == False: os.makedirs(folder_camembert_result + dir)
         files = os.listdir(corpus_reformed + dir)
         for file in files:
             file_to_read = corpus_reformed + dir + "/" + file
             file_spacy_result = folder_spacy_result + dir + "/" + file
-            
+            file_camembert_result = folder_camembert_result + dir + "/" + file
+
             useModelSpacy(nlp, file_to_read, file_spacy_result)
+            useModelCamembert(model, tokenizer, file_to_read, file_camembert_result)
     
     for dir in subdirectories:
         if os.path.exists(folder_merge + dir) == False: os.makedirs(folder_merge + dir)
@@ -119,4 +144,6 @@ def findEntityName():
                     file_spacy_result_path = folder_spacy_result + dir + "/" + file_spacy
                     file_to_save_result_merge = folder_merge + dir + "/" + file_freeling
                     mergeResult(file_freeling_result_path, file_spacy_result_path, file_to_save_result_merge)
+
+findEntityName()
                     
