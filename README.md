@@ -15,7 +15,11 @@ Dépendances Python (voir requirements.txt)
 
 _Assurez-vous d'avoir votre corpus dans le dossier corpus/[votre-dossier]_
 
-Lancer la commande : **make run**
+Lancer la commande : 
+
+```python
+make run
+```
 
 Le makefile contient : 
 
@@ -115,9 +119,23 @@ Puis ce dernier crée des fichiers .graphml à partir des données du CSV, et le
 
 ### `statistiques.py`
 
-Cette fichier est pour calculer et stocker les statistiques des données du corpus dans le dossier /corpus/corspus_statistiques, les staitistiques des données pour chaque chapitre du livre sont notés dans chaque fichier du chapitre correspondant du livre, et il y a une fichier pour noter les statistiques des données du niveau livre pour chaque livre.
+_Assurez-vous que le script génère le dossier corpus\corpus_statistique._
 
-Ce script est lancé à côté tout seul pour le moment où nous voulons récupérer les statistiques des données du corpus
+Ce script effectue une analyse approfondie du texte pour en extraire des métriques utiles telles que la répartition des mots, les entités nommées et les structures syntaxiques, fournissant ainsi une compréhension détaillée du corpus.
+
+* Nombre de mots par phrase, paragraphe et chapitre : Le script extrait et compte le nombre de mots dans chaque phrase, paragraphe et chapitre des fichiers du corpus.
+
+* Répartition des types de mots (majuscules, minuscules, mots en majuscule en début de phrase) : Il analyse la répartition des mots en fonction de leur casse dans le corpus.
+
+* Mots-clés et entités nommées : Il identifie et compte les entités nommées dans les chapitres en utilisant une liste définie de noms propres. Il extrait également les mots entre chaque entité nommée.
+
+* Analyse syntaxique : Le script effectue une analyse de la structure syntaxique en déterminant la structure des phrases (nombre de phrases nominales).
+
+* Génération de statistiques globales pour chaque livre : Il compile des statistiques agrégées pour chaque livre du corpus, comme la moyenne du nombre de mots par phrase, paragraphe, etc
+
+Ce script peut être lancer indépedamment. 
+
+Si vous voulez récupérer les statistiques des données du corpus, veuillez faire la commande suivante :
 
 ```
 ~:python3 statistiques.py
@@ -125,23 +143,21 @@ Ce script est lancé à côté tout seul pour le moment où nous voulons récup�
 
 ### `drawBoxPlot.py`
 
-Ce script est pour déssiner la boît moustache et l'histograme pour chaque chapitre, nous devons donner la paramètre du chemin de la fichier du chapitre à la fin du script où on appelle la fonction:
+_Assurez-vous que de donner le chemin du fichier du chapitre souhaité et que le script ``statistiques.py`` soit lancer avant_
+
+Ce script dessine la boîte à moustaches et l'histogramme de chaque chapitre. 
 
 ```python
-drawData("corpus/corpus_statistiques/prelude_a_fondation/chapter_1.txt.json")
-```
-
-Ce script est aussi lancé à côté poour le moment où on en a besoin:
-
-```
-~:python3 statistiques.py
+drawData("corpus/corpus_statistiques/[sous-dossier]/[chapitre].txt.json")
 ```
 
 ### `2Dplot.py`
 
-Ce script est pour déssiner la Distribution des entités par chapitre pour chaque livre. Dans la graphique, le blanc représente l'absence et le noir 7 entités dans la fenêtre.
+Ce script est dessiner la distribution des entités par chapitre pour chaque livre. 
 
-Ce script est aussi lancé à côté poour le moment où on en a besoin:
+Dans la graphique, le blanc représente l'absence et le noir 7 entités dans la fenêtre.
+
+Si vous voulez récupérer le graphique, veuillez faire la commande suivante :
 
 ```
 ~:python3 2Dplot.py
