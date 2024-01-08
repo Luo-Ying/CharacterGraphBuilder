@@ -112,3 +112,37 @@ _Pour utiliser ce script, assurez-vous d'avoir le fichier CSV `my_submission.csv
 Ce script lit le fichier CSV généré par `createCSV.py`.
 
 Puis ce dernier crée des fichiers .graphml à partir des données du CSV, et les stocke dans un dossier spécifique.
+
+### `statistiques.py`
+
+Cette fichier est pour calculer et stocker les statistiques des données du corpus dans le dossier /corpus/corspus_statistiques, les staitistiques des données pour chaque chapitre du livre sont notés dans chaque fichier du chapitre correspondant du livre, et il y a une fichier pour noter les statistiques des données du niveau livre pour chaque livre.
+
+Ce script est lancé à côté tout seul pour le moment où nous voulons récupérer les statistiques des données du corpus
+
+```
+~:python3 statistiques.py
+```
+
+### `drawBoxPlot.py`
+
+Ce script est pour déssiner la boît moustache et l'histograme pour chaque chapitre, nous devons donner la paramètre du chemin de la fichier du chapitre à la fin du script où on appelle la fonction:
+
+```python
+drawData("corpus/corpus_statistiques/prelude_a_fondation/chapter_1.txt.json")
+```
+
+Ce script est aussi lancé à côté poour le moment où on en a besoin:
+
+```
+~:python3 statistiques.py
+```
+
+### `2Dplot.py`
+
+Ce script est pour déssiner la Distribution des entités par chapitre pour chaque livre. Dans la graphique, le blanc représente l'absence et le noir 7 entités dans la fenêtre.
+
+Ce script est aussi lancé à côté poour le moment où on en a besoin:
+
+```
+~:python3 2Dplot.py
+```
