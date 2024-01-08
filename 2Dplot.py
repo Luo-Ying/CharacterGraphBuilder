@@ -60,6 +60,8 @@ def draw2Dplot(all_arr, title):
     ax0.pcolor(Z, cmap='gist_yarg', vmin=0, vmax=7) 
     
     ax0.set_title(title) 
+    ax0.set_xlabel("Fenêtres dans le chapitre")
+    ax0.set_ylabel("Chapitres")
     plt.savefig(f"./corpus/corpus_plots/{title}.png")
 
 drawData("les_cavernes_d_acier")
