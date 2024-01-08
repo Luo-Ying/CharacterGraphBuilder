@@ -27,3 +27,5 @@ def reformFile(corpus_path = "corpus/corpus_asimov_leaderboard", output_path = "
                 print(f"Le fichier {output_file} a été créé avec succès.")
 
     print("Tous les fichiers ont été traités.")
+
+reformFile()
