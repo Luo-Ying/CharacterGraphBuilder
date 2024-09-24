@@ -5,6 +5,8 @@ Ce code est développé par :
 * Jérôme BURGEAT
 * Yingqi LUO
 
+Rapport réalisé : [Extraction automatique de réseau de personnages - Fondation d'Asimov](./Extraction%20automatique%20de%20réseaux%20de%20personnages%20-%20Fondation%20d'Asimov.pdf)
+
 ### Pré-requis
 
 Python (version 3.9.13)
